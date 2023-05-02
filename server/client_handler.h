@@ -17,9 +17,13 @@
 #include <string.h>
 
 #include "message.h"
+#include "chat_node.h"
+
+extern volatile sig_atomic_t shutdownServerFlag;
 
 // Functions prototypes
 void* handle_client(void* arg);
+void setShutDownServer( int sig );
 
 // Declare Constants
     // None

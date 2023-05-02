@@ -7,7 +7,6 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -17,12 +16,13 @@
 #include <string.h>
 
 #include "client_handler.h"
+#include "chat_node.h"
 
 // Function prototypes
     // None
 
 // Declare Constants
-#define NUM_CONNECTIONS 5
+#define MAX_CONNECTIONS 5
 #define PORT 23567
 #define FALSE 0
 #define TRUE !FALSE

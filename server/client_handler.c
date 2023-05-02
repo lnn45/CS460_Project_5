@@ -1,5 +1,7 @@
 #include "client_handler.h"
 
+volatile sig_atomic_t shutdownServerFlag = 0;
+
 /*
 Name: handle_client
 Process: handle client's request in seperated thread
@@ -11,41 +13,71 @@ Dependencies: None
 */
 void* handle_client(void* arg)
 {
-    int client_socket = *((int*)arg);   // the socket connected to the client
-    Message *input;
-    char messageFromClient[ MAX_STR_LEN ];
+    char buffer[ 2048 ];
+    char client_name[ 32 ];
+    bool leaveFlag = false;
 
-    while( input->type != LEAVE || input->type != SHUTDOWN )
+    Chat_Node *client = (Chat_Node *)arg;
+
+    if( recv(client->client_socket, client_name, 32, 0 ) <= 0 ||
+        strlen(client_name) < 2 ||
+        strlen(client_name) >= 31 )
     {
-        read(client_socket, input, sizeof( Message ));
+        printf("Didn't enter the name.\n");
 
-        switch (input->type)
-        {
-            case NOTE:
-                strcpy( messageFromClient, input->content )
-                break;
-            
-            case SHUTDOWN_ALL:
-                strcpy( messageFromClient, "SHUTDOWN ALL" );
-                input->type = LEAVE;
-                break;
-        }
-
-        if( input->type == NOTE )
-        {
-            sendMessage( input );
-        }
-
+        leaveFlag = true;
+    }
+    else
+    {
+        strcpy( client->name, client_name );
+        sprintf( buffer, "%s has joined\n", client->name );
+        printf( "%s", buffer );
+        sendMessage( client->client_id, buffer );
     }
 
+    bzero(buffer, 2048);
 
-    // cleanup
-    if ( input->type != LEAVE || input->type != SHUTDOWN && close(client_socket) == -1 ) {
-        perror("Error closing socket");
-        exit(EXIT_FAILURE);
-    } else {
-        printf("Closed socket to client, exit");
+    while( leaveFlag != true )
+    {
+        int messageFromClient = recv( client->client_socket, buffer, 2048, 0 );
+
+        if( strcmp( buffer, "LEAVE" ) == 0 || strcmp( buffer, "SHUTDOWN" ) == 0 )
+        {
+            sprintf(buffer, "%s has left\n", client->name);
+			printf("%s", buffer);
+			sendMessage( client->client_id, buffer );
+			leaveFlag = true;
+        }
+        else if( strcmp( buffer, "SHUTDOWN ALL" ) == 0 )
+        {
+            printf("SHUTDOWN ALL from %s", client->name );
+            sprintf( buffer, "SHUTDOWN ALL" );
+            sendMessage( client->client_id, buffer );
+            setShutDownServer( 2 );
+            leaveFlag = true;
+        }
+        else
+        {
+            if( strlen( buffer ) > 0 )
+            {
+                sendMessage( client->client_id, buffer );
+                printf( "%s", buffer );
+            }
+        }
+        
+        bzero(buffer, 2048);
     }
-    
-    pthread_exit(NULL);
+
+    close( client->client_socket );
+    removeElementFromList( client->client_id );
+    free( client );
+
+    pthread_detach( pthread_self() );
+
+    return NULL;
+}
+
+void setShutDownServer( int sig )
+{
+    shutdownServerFlag = 1;
 }
