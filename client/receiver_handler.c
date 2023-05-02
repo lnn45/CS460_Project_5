@@ -1,43 +1,34 @@
 #include "receiver_handler.h"
 
-
-bool handle_message(Message* received_message, char command[ STD_STR_LEN ] )
+void *handle_receiver( void *arg )
 {
+    int client_socket = *((int*)arg);
 
-    //Initialize variables
+    char message[2048] = {};
 
-    while( command != SHUTDOWN || command != SHUTDOWN_ALL)
+    while( true )
     {
-        //check for message command type (switch statement)
-        switch (command)
+        int receiveFromServer = recv( client_socket, message, 2048, 0 );
+
+        if( receiveFromServer > 0 )
         {
-            //JOIN command
-            case JOIN:
-                /* code to join the server */
+            if( strcmp( message, "SHUTDOWN ALL") == 0 )
+            {
+                setStopFlag(2);
                 break;
-            
-            case LEAVE:
-                break;
+            }
+            {
+                printf( "%s", message );
 
-            case NOTE:
-                // create a node for message
-                // add to the linked list of chat
-                // send the linked list to the server
-                break;
-
-            case SHUTDOWN:
-                // create new note for message
-                // add the message out to the linked list
-                // send to the server
-                break;
-
-            case SHUTDOWN_ALL:
-                // create new note for message
-                // add the message out to the linked list
-                // send to the server
-                break;
+                printf( "%s", "> " );
+                fflush(stdout);
+            }
         }
+        else if( receiveFromServer == 0 )
+        {
+            break;
+        }
+        
+        memset( message, 0, sizeof(message) );
     }
-
-    return EXIT_SUCCESS;
 }

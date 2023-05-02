@@ -17,14 +17,18 @@
 #include <sys/uio.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #include "properties.h"
 #include "receiver_handler.h"
 #include "sender_handler.h"
 
 // declare constants
-#define INFO_FILE "server_info.conf"
+#define INFO_FILE "server.properties"
+#define CLIENT_NAME "Client"
 #define SERVER_LINE "Server"
 #define PORT_LINE "Port"
+#define MAX_STR_LEN 128
+#define MIN_STR_LEN 64
 
 #endif

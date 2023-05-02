@@ -1,17 +1,17 @@
 //Protect from multiple compiling
-#ifndef receiver_handler_h
-#define receiver_handler_h
+#ifndef RECEIVER_HANDLER_H
+#define RECEIVER_HANDLER_H
 
 //headers
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <sys/socket.h>
+#include <string.h>
 
-#include "message.h"
-#include "chat_node.h"
+#include "sender_handler.h"
 
 //function prototypes
-void main();
-bool handle_messages(Message * received_message);
+void *handle_receiver(void *arg);
 
 #endif //RECEIVER_HANDLER_H
